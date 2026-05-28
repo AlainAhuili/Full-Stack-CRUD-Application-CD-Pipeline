@@ -60,7 +60,7 @@ In a Continuous Delivery model, database changes must never break co-existing ap
 | **2. Deploy** | Database supports both states. | Deploy the new Backend version which reads/writes to the new schema structures. |
 | **3. Contract** | Run a separate, post-deployment migration to safely deprecate and drop legacy columns/tables. | New application version is fully stabilized; old structures are cleanly removed. |
 
-> ⚠️ **Critical Rule:** Never put breaking database schema changes and backend code updates into the same deployment unit. They must always be split into separate, backward-compatible steps.
+> **Critical Rule:** Never put breaking database schema changes and backend code updates into the same deployment unit. They must always be split into separate, backward-compatible steps.
 
 ---
 
