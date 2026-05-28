@@ -25,7 +25,7 @@ Following CD core principles, our pipeline acts as the ultimate gatekeeper for p
 
 ---
 
-## 📋 Pipeline Stages Reference
+## Pipeline Stages Reference
 
 <Sequence>
   <Step title="1. Commit Stage (Fast Feedback)" subtitle="Target: Under 5 Minutes">
