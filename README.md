@@ -32,7 +32,7 @@ Following CD core principles, our pipeline acts as the ultimate gatekeeper for p
     Triggered on every push to the `main` branch. Evaluates technical viability at the code level.
     - Compiles source code and checks syntax/linting rules.
     - Executes isolated, high-speed **Unit Tests** (mocking all external database dependencies).
-    - **Outcome:** If successful, publishes unique Docker images tagged with the `GIT_SHA` to the private Artifact Registry.
+    - **Outcome:** If successful, publishes unique Docker images tagged with the `GIT_SHA` to the Artifact Registry(Use use here DockerHub).
   </Step>
   <Step title="2. Automated Acceptance Stage" subtitle="Target: Under 15 Minutes">
     Validates whether the release candidate delivers correct functional behavior.
