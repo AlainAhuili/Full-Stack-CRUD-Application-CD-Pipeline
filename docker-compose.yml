@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   database:
     image: crud-database:${GIT_SHA:-local}
+    pull_policy: never
     environment:
       - POSTGRES_DB=crud_db
       - POSTGRES_USER=postgres
@@ -17,6 +16,7 @@ services:
 
   backend:
     image: crud-backend:${GIT_SHA:-local}
+    pull_policy: never
     environment:
       - DB_HOST=database
       - DB_USER=postgres
@@ -30,6 +30,7 @@ services:
 
   frontend:
     image: crud-frontend:${GIT_SHA:-local}
+    pull_policy: never
     ports:
       - "8080:8080"
     depends_on:
