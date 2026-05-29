@@ -14,6 +14,43 @@ The application is structured as a decoupled, three-tier architecture where each
 
 ---
 
+## Project Structure
+
+```text
+├── .github/
+│   └── workflows/
+│       ├── commit-stage.yml
+│       └── acceptance-stage.yml
+├── backend/
+│   ├── src/
+│   ├── tests/
+│   │   ├── unit/
+│   │   └── component/
+│   ├── Dockerfile
+│   └── package.json
+├── database/
+│   ├── migrations/
+│   │   ├── 001_init.sql
+│   │   └── 002_expand_user_table.sql
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   ├── tests/
+│   │   └── unit/
+│   ├── Dockerfile
+│   └── package.json
+├── tests-e2e/
+│   ├── src/
+│   │   ├── crud-create.test.js
+│   │   ├── crud-read.test.js
+│   │   ├── crud-update.test.js
+│   │   └── crud-delete.test.js
+│   ├── Dockerfile
+│   └── package.json
+├── docker-compose.yml
+├── README.md
+└── Taskfile.yml
+
 ## The Continuous Delivery Pipeline
 
 Following CD core principles, our pipeline acts as the ultimate gatekeeper for production quality. It treats software compilation and testing as completely separate responsibilities to maximize feedback speed.
