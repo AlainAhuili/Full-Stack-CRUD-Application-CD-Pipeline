@@ -29,11 +29,22 @@ package:
 acceptance-stage:
 	@echo "Spinning up isolated acceptance testing environment with tag: $(GIT_SHA)"
 	docker compose up -d --wait
-	@echo "Running end-to-end CRUD acceptance tests..."
-	@curl -s http://localhost:3000 || (echo "Backend unreachable!" && make clean && exit 1)
-	@echo "Acceptance Stage Passed! All systems nominal."
+	@echo "Running transactional end-to-end CRUD acceptance tests..."
+	@echo "1. Creating a new user record via POST..."
+	@USER_PAYLOAD=$$(curl -s -X POST -H "Content-Type: application/json" -d '{"name":"DevOps Engineer","email":"devops@example.com"}' http://localhost:3000/api/users); \
+	echo "Response: $$USER_PAYLOAD"; \
+	if ! echo "$$USER_PAYLOAD" | grep -q "devops@example.com"; then \
+		echo "Failed to create user!"; make clean; exit 1; \
+	fi
+	@echo "2. Fetching the user records list via GET..."
+	@GET_PAYLOAD=$$(curl -s http://localhost:3000/api/users); \
+	echo "Response: $$GET_PAYLOAD"; \
+	if ! echo "$$GET_PAYLOAD" | grep -q "DevOps Engineer"; then \
+		echo "Verification payload check failed!"; make clean; exit 1; \
+	fi
+	@echo "Acceptance Stage Passed! All transactional assertions verified."
 	@make clean
 
 clean:
 	@echo "Tearing down environments and cleaning up resources..."
-	docker compose down -v
+	docker compose down -vs
