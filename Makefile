@@ -1,5 +1,8 @@
 .PHONY: commit-stage lint test-unit
 
+# Get the current Git commit SHA to tag our immutable artifacts
+GIT_SHA ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "local")
+
 # The default target that orchestrates the local commit stage
 commit-stage: lint test-unit
 	@echo "Commit Stage Passed Locally! Safe to push."
