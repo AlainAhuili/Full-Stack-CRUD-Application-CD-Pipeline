@@ -1,11 +1,10 @@
-.PHONY: commit-stage lint test-unit
+.PHONY: commit-stage lint test-unit package
 
 # Get the current Git commit SHA to tag our immutable artifacts
 GIT_SHA ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "local")
 
-# The default target that orchestrates the local commit stage
-commit-stage: lint test-unit
-	@echo "Commit Stage Passed Locally! Safe to push."
+commit-stage: lint test-unit package
+	@echo "Commit Stage Passed! Artifacts created with tag: $(GIT_SHA)"
 
 lint:
 	cd frontend && npm run lint
@@ -14,7 +13,7 @@ lint:
 test-unit:
 	cd frontend && npm run test:unit
 	cd backend && npm run test:unit
-  
+
 package:
 	@echo "Building immutable Docker images..."
 	docker build -t crud-frontend:$(GIT_SHA) ./frontend
