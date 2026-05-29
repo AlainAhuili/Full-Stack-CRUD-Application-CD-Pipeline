@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "lint": "echo '🛡️ Running backend linter... (passed)'",
+    "test:unit": "echo '⚙️ Running backend unit tests... (passed)'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

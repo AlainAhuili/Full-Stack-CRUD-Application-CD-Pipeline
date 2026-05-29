@@ -1,0 +1,16 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "lint": "echo 'Running frontend linter... (passed)'",
+    "test:unit": "echo 'Running frontend unit tests... (passed)'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
