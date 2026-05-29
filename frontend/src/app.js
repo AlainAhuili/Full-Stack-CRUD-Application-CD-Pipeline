@@ -42,7 +42,7 @@ async function fetchUsers() {
         userTableBody.innerHTML = `
             <tr>
                 <td colspan="4" class="py-8 text-center text-rose-500 font-medium">
-                    ❌ Unable to stream data from backend API layer. Is the server container active?
+                    Unable to stream data from backend API layer. Is the server container active?
                 </td>
             </tr>`;
     }
