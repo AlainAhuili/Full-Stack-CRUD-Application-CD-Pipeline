@@ -7,24 +7,21 @@ on:
     branches: [ main ]
 
 jobs:
-  validate:
+  validate-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
 
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: |
-            backend/package-lock.json
-            frontend/package-lock.json
 
       - name: Install Dependencies
         run: |
           cd backend && npm ci
           cd ../frontend && npm ci
 
-      - name: Run Commit Stage Validation Loop
-        run: make commit-stage
+      - name: Run Unified Orchestration Pipeline
+        run: make pipeline
