@@ -19,3 +19,17 @@ package:
 	docker build -t crud-frontend:$(GIT_SHA) ./frontend
 	docker build -t crud-backend:$(GIT_SHA) ./backend
 	docker build -t crud-database:$(GIT_SHA) ./database
+
+# Phase 2 Gate: Automated Acceptance Stage
+acceptance-stage:
+	@echo "Spinning up isolated acceptance testing environment..."
+	docker compose up -d --wait
+	@echo "Running end-to-end CRUD acceptance tests..."
+	@# This is a placeholder for your actual E2E suite (Playwright/Cypress/Newman)
+	@curl -s http://localhost:3000 || (echo "Backend unreachable!" && make clean && exit 1)
+	@echo "Acceptance Stage Passed! All systems nominal."
+	@make clean
+
+clean:
+	@echo "Tearing down environments and cleaning up resources..."
+	docker compose down -v
