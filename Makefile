@@ -47,4 +47,4 @@ acceptance-stage:
 
 clean:
 	@echo "Tearing down environments and cleaning up resources..."
-	docker compose down -vs
+	docker compose down -v
