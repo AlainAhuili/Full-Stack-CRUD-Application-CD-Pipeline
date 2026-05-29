@@ -51,6 +51,8 @@ The application is structured as a decoupled, three-tier architecture where each
 ├── README.md
 └── Taskfile.yml
 
+---
+
 ## The Continuous Delivery Pipeline
 
 Following CD core principles, our pipeline acts as the ultimate gatekeeper for production quality. It treats software compilation and testing as completely separate responsibilities to maximize feedback speed.
