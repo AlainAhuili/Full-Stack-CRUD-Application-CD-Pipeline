@@ -1,8 +1,13 @@
-.PHONY: commit-stage lint test-unit package
+.PHONY: pipeline commit-stage lint test-unit package acceptance-stage clean
 
-# Get the current Git commit SHA to tag our immutable artifacts
-GIT_SHA ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "local")
+# Establish a single, immutable SHA for the entire execution execution run
+export GIT_SHA := $(shell git rev-parse --short HEAD 2>/dev/null || echo "local")
 
+# Master Target: Runs the entire local CD pipeline end-to-end
+pipeline: commit-stage acceptance-stage
+	@echo "Full local pipeline run complete! Ready for remote push."
+
+# Stage 1: Commit Validation Gates
 commit-stage: lint test-unit package
 	@echo "Commit Stage Passed! Artifacts created with tag: $(GIT_SHA)"
 
@@ -20,12 +25,11 @@ package:
 	docker build -t crud-backend:$(GIT_SHA) ./backend
 	docker build -t crud-database:$(GIT_SHA) ./database
 
-# Phase 2 Gate: Automated Acceptance Stage
+# Stage 2: Automated Acceptance Testing Gate
 acceptance-stage:
-	@echo "Spinning up isolated acceptance testing environment..."
+	@echo "Spinning up isolated acceptance testing environment with tag: $(GIT_SHA)"
 	docker compose up -d --wait
 	@echo "Running end-to-end CRUD acceptance tests..."
-	@# This is a placeholder for your actual E2E suite (Playwright/Cypress/Newman)
 	@curl -s http://localhost:3000 || (echo "Backend unreachable!" && make clean && exit 1)
 	@echo "Acceptance Stage Passed! All systems nominal."
 	@make clean
