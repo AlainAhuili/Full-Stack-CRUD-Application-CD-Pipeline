@@ -17,4 +17,5 @@ test-unit:
 package:
 	@echo "Building immutable Docker images..."
 	docker build -t crud-frontend:$(GIT_SHA) ./frontend
-	docker build -t crud-backend:$(GIT_SHA) ./backenddocker build -t crud-database:$(GIT_SHA) ./database
+	docker build -t crud-backend:$(GIT_SHA) ./backend
+	docker build -t crud-database:$(GIT_SHA) ./database
