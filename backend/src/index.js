@@ -30,17 +30,20 @@ const getRequestBody = (req) => {
 };
 
 const server = http.createServer(async (req, res) => {
-  // Set common headers for JSON API responses and handle simple CORS
-  res.setHeader('Content-Type', 'application/json');
+  // 1. Inject Broad CORS Headers Immediately
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
+  // 2. Handle the Browser Pre-flight Options Request Cleanly
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     res.end();
     return;
   }
+
+  // Set standard JSON content header for everything else
+  res.setHeader('Content-Type', 'application/json');
 
   try {
     // ROUTE 1: GET /api/users (Read All)
