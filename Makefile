@@ -29,6 +29,11 @@ acceptance:
 	node tests/acceptance/auth-flow.spec.js || (make clean && exit 1)
 	@echo "Tearing down transient environment..."
 	make clean
+	
+pipeline:
+	@echo "🚀 Starting Complete CI/CD Pipeline Automation Suite..."
+	$(MAKE) commit-stage
+	$(MAKE) acceptance
 
 clean:
 	# CRITICAL: Do the same here so cleanup finds the correct images
