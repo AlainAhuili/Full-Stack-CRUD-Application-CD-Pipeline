@@ -30,8 +30,22 @@ acceptance:
 	@echo "Tearing down transient environment..."
 	make clean
 	
+# Run local production using the current validated Git SHA
+prod-up:
+	@echo "Launching Persistent Local Production Environment..."
+	sudo GIT_SHA=$(shell git rev-parse --short HEAD) docker compose -f docker-compose.production.yml up -d
+
+# Check the health and uptime of production workloads
+prod-status:
+	sudo docker compose -f docker-compose.production.yml ps
+
+# Bring down production without losing your database records
+prod-down:
+	@echo "Stopping Production Services Safely..."
+	sudo docker compose -f docker-compose.production.yml down
+	
 pipeline:
-	@echo "🚀 Starting Complete CI/CD Pipeline Automation Suite..."
+	@echo "Starting Complete CI/CD Pipeline Automation Suite..."
 	$(MAKE) commit-stage
 	$(MAKE) acceptance
 
