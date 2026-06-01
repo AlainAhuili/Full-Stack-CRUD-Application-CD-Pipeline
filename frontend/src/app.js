@@ -1,9 +1,10 @@
-const API_URL = window.location.origin.includes('localhost') 
-    ? 'http://localhost:3001/api' 
-    : '/api';
+// FIX: Clean, valid production endpoint string
+const API_URL = 'http://localhost:3001/api';
 
 const App = {
-    // Auth Token Storage Management
+    // ==========================================
+    // AUTH TOKEN STORAGE MANAGEMENT
+    // ==========================================
     getToken() {
         return localStorage.getItem('token');
     },
@@ -25,59 +26,94 @@ const App = {
         return headers;
     },
 
-    // Authentication Endpoints
+    // ==========================================
+    // AUTHENTICATION ENDPOINTS
+    // ==========================================
     async register(username, password) {
-        const res = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        if (!res.ok) throw new Error('Registration failed');
-        return res.json();
+        try {
+            const res = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Registration failed');
+            }
+            return await res.json();
+        } catch (error) {
+            console.error("Registration Engine Error:", error.message);
+            throw error;
+        }
     },
 
     async login(username, password) {
-        const res = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        if (!res.ok) throw new Error('Invalid credentials');
-        const data = await res.json();
-        this.setToken(data.token);
-        return data;
+        try {
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Invalid credentials');
+            }
+            const data = await res.json();
+            this.setToken(data.token);
+            return data;
+        } catch (error) {
+            console.error("Login Engine Error:", error.message);
+            throw error;
+        }
     },
 
-    // Protected CRUD Resource Endpoints
+    // ==========================================
+    // PROTECTED CRUD RESOURCE ENDPOINTS
+    // ==========================================
     async getItems() {
-        const res = await fetch(`${API_URL}/items`, {
-            method: 'GET',
-            headers: this.getHeaders()
-        });
-        if (res.status === 401 || res.status === 403) {
-            this.clearToken();
-            return null;
+        try {
+            const res = await fetch(`${API_URL}/items`, {
+                method: 'GET',
+                headers: this.getHeaders()
+            });
+            if (res.status === 401 || res.status === 403) {
+                this.clearToken();
+                return null;
+            }
+            if (!res.ok) throw new Error('Failed to fetch items from DB');
+            return await res.json();
+        } catch (error) {
+            console.error("Fetch Items Exception:", error.message);
+            throw error;
         }
-        if (!res.ok) throw new Error('Failed to fetch items');
-        return res.json();
     },
 
     async createItem(name) {
-        const res = await fetch(`${API_URL}/items`, {
-            method: 'POST',
-            headers: this.getHeaders(),
-            body: JSON.stringify({ name })
-        });
-        if (!res.ok) throw new Error('Failed to create item');
-        return res.json();
+        try {
+            const res = await fetch(`${API_URL}/items`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify({ name })
+            });
+            if (!res.ok) throw new Error('Failed to create item in DB');
+            return await res.json();
+        } catch (error) {
+            console.error("Create Item Exception:", error.message);
+            throw error;
+        }
     },
 
     async deleteItem(id) {
-        const res = await fetch(`${API_URL}/items/${id}`, {
-            method: 'DELETE',
-            headers: this.getHeaders()
-        });
-        if (!res.ok) throw new Error('Failed to delete item');
-        return res.json();
+        try {
+            const res = await fetch(`${API_URL}/items/${id}`, {
+                method: 'DELETE',
+                headers: this.getHeaders()
+            });
+            if (!res.ok) throw new Error('Failed to delete item from DB');
+            return await res.json();
+        } catch (error) {
+            console.error("Delete Item Exception:", error.message);
+            throw error;
+        }
     }
 };

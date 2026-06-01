@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     let isLoginMode = true;
 
-    // DOM Elements Cache
+    // ==========================================
+    // DOM ELEMENTS CACHE
+    // ==========================================
     const authSection = document.getElementById('auth-section');
     const crudSection = document.getElementById('crud-section');
     const authForm = document.getElementById('auth-form');
@@ -14,8 +16,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemNameInput = document.getElementById('item-name');
     const itemsList = document.getElementById('items-list');
     const logoutBtn = document.getElementById('logout-btn');
+    const errorBox = document.getElementById('error-box');
 
-    // UI View State Orchestration
+    // ==========================================
+    // UI NOTIFICATION LIFECYCLE MANAGEMENT
+    // ==========================================
+    function displaySystemMessage(message, isError = true) {
+        if (!errorBox) return;
+        errorBox.innerText = message;
+        errorBox.classList.remove('hidden');
+        
+        // Dynamically style based on intent condition
+        errorBox.style.background = isError ? '#F8D7DA' : '#D4EDDA';
+        errorBox.style.color = isError ? '#721C24' : '#155724';
+        errorBox.style.border = isError ? '1px solid #F5C6CB' : '1px solid #C3E6CB';
+
+        // Auto-dismiss banner message after active operational window threshold
+        setTimeout(() => {
+            errorBox.classList.add('hidden');
+        }, 4000);
+    }
+
+    // UI View State Orchestration Matrix Engine
     function renderView() {
         if (App.getToken()) {
             authSection.classList.add('hidden');
@@ -28,7 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Toggle between Login and Registration UI modes
+    // ==========================================
+    // AUTHENTICATION TRANSITION ACTIONS
+    // ==========================================
     switchAuthMode.addEventListener('click', () => {
         isLoginMode = !isLoginMode;
         if (isLoginMode) {
@@ -40,11 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
             authSubmitBtn.innerText = 'Register';
             authSwitchText.innerHTML = `Already have an account? <span id="switch-auth-mode">Login here</span>`;
         }
-        // Re-attach listener to newly appended innerHTML span element dynamically
+        // Re-attach routing reference listener to newly appended block dynamically
         document.getElementById('switch-auth-mode').addEventListener('click', () => switchAuthMode.click());
     });
 
-    // Auth Submission Handling
+    // Auth Submission Control Gateway Handler
     authForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('username').value.trim();
@@ -53,20 +77,24 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (isLoginMode) {
                 await App.login(username, password);
-                alert('Logged in successfully!');
+                displaySystemMessage('Authenticated successfully!', false);
             } else {
                 await App.register(username, password);
-                alert('Registration successful! Please login.');
-                switchAuthMode.click(); // Flip back to login mode automatically
+                displaySystemMessage('Registration complete! Proceeding to gateway.', false);
+                switchAuthMode.click(); // Flip back to login view natively
             }
             authForm.reset();
             renderView();
         } catch (err) {
-            alert(err.message);
+            displaySystemMessage(err.message, true);
         }
     });
 
-    // Load and Display User Items
+    // ==========================================
+    // PROTECTED CRUD OPERATIONS LIFECYCLE
+    // ==========================================
+    
+    // Read: Fetch and Render Items
     async function loadItems() {
         try {
             const items = await App.getItems();
@@ -79,16 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>${item.name}</span>
-                    <button onclick="handleDeleteItem(${item.id})" style="background: #DC3545; padding: 4px 10px;">X</button>
+                    <button class="delete-item-btn" data-id="${item.id}" style="background: #DC3545; padding: 4px 10px;">X</button>
                 `;
                 itemsList.appendChild(li);
             });
         } catch (err) {
-            console.error(err.message);
+            displaySystemMessage(`Fetch Sync Defect: ${err.message}`, true);
         }
     }
 
-    // Create New Item Handler
+    // Create: Add New Record Entry
     itemForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = itemNameInput.value.trim();
@@ -97,26 +125,31 @@ document.addEventListener('DOMContentLoaded', () => {
             itemNameInput.value = '';
             loadItems();
         } catch (err) {
-            alert(err.message);
+            displaySystemMessage(err.message, true);
         }
     });
 
-    // Delete Target Item Function made visible globally to window scope context for inline HTML handler execution
-    window.handleDeleteItem = async (id) => {
-        try {
-            await App.deleteItem(id);
-            loadItems();
-        } catch (err) {
-            alert(err.message);
+    // Delete: Event Delegation Listener (Eliminates leaky window global handlers)
+    itemsList.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-item-btn')) {
+            const targetId = e.target.getAttribute('data-id');
+            try {
+                await App.deleteItem(targetId);
+                loadItems();
+            } catch (err) {
+                displaySystemMessage(err.message, true);
+            }
         }
-    };
+    });
 
-    // Logout Trigger Event
+    // ==========================================
+    // TEARDOWN LIFECYCLE
+    // ==========================================
     logoutBtn.addEventListener('click', () => {
         App.clearToken();
         renderView();
     });
 
-    // Initial load execution trace entry gatepoint
+    // Boot Initialization Sequence Execution Core
     renderView();
 });

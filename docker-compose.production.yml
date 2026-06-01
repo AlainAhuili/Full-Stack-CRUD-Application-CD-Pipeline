@@ -13,6 +13,11 @@ services:
       - "5432:5432"
     volumes:
       - prod_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prod_user -d production_crud_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend-prod:
     image: crud-backend:3a1ff16
@@ -34,7 +39,7 @@ services:
     container_name: crud-production-frontend
     restart: always
     ports:
-      - "80:80" # Exposed on standard HTTP port for production access
+      - "9000:8080"
 
 volumes:
   prod_db_data:

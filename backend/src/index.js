@@ -1,107 +1,169 @@
 const http = require('http');
-const { Pool } = require('pg');
-const UserRepository = require('./userRepository');
 
-const PORT = process.env.PORT || 3000;
+// Simple runtime in-memory database array to hold items added by the user
+let dbItemsCollection = [
+    { id: 1, name: "Database Record Cluster Alpha" },
+    { id: 2, name: "Automated Core Pipeline Asset" }
+];
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'supersecurepassword',
-  database: process.env.DB_NAME || 'crud_db',
-  port: 5432,
-});
-
-const userRepository = new UserRepository(pool);
-
-// Helper function to extract JSON request body
+// Asynchronous Request Body Stream Parser Helper
 const getRequestBody = (req) => {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
-    req.on('end', () => {
-      try {
-        resolve(body ? JSON.parse(body) : {});
-      } catch (err) {
-        reject(err);
-      }
+    return new Promise((resolve, reject) => {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', () => {
+            try {
+                resolve(body ? JSON.parse(body) : {});
+            } catch (err) {
+                reject(err);
+            }
+        });
+        req.on('error', err => reject(err));
     });
-  });
 };
 
+// ==========================================
+// SERVER CORE LIFECYCLE (MUST BE ASYNC)
+// ==========================================
 const server = http.createServer(async (req, res) => {
-  // 1. Inject Broad CORS Headers Immediately
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // 1. Inject Global CORS Headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  // 2. Handle the Browser Pre-flight Options Request Cleanly
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
-    return;
-  }
-
-  // Set standard JSON content header for everything else
-  res.setHeader('Content-Type', 'application/json');
-
-  try {
-    // ROUTE 1: GET /api/users (Read All)
-    if (req.url === '/api/users' && req.method === 'GET') {
-      const users = await userRepository.findAll();
-      res.writeHead(200);
-      res.end(JSON.stringify(users));
-      return;
-    }
-
-    // ROUTE 2: POST /api/users (Create User)
-    if (req.url === '/api/users' && req.method === 'POST') {
-      const { name, email } = await getRequestBody(req);
-      
-      if (!name || !email) {
-        res.writeHead(400);
-        res.end(JSON.stringify({ error: "Missing required fields: name and email" }));
+    // 2. Clear out Pre-flight Handshakes Instantly
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
         return;
-      }
-
-      const newUser = await userRepository.create({ name, email });
-      res.writeHead(210); // Using 201 Created status
-      res.end(JSON.stringify(newUser));
-      return;
     }
 
-    // ROUTE 3: Health Check
-    if ((req.url === '/' || req.url === '/health') && req.method === 'GET') {
-      const dbCheck = await pool.query('SELECT NOW(), COUNT(*) FROM users;');
-      res.writeHead(200);
-      res.end(JSON.stringify({
-        status: "healthy",
-        database: "connected",
-        user_count: parseInt(dbCheck.rows[0].count, 10)
-      }));
-      return;
+    res.setHeader('Content-Type', 'application/json');
+
+    try {
+        // ==========================================
+        // AUTHENTICATION ENDPOINTS
+        // ==========================================
+
+        // ROUTE: POST /api/auth/register
+        if (req.url === '/api/auth/register' && req.method === 'POST') {
+            let bodyData;
+            try {
+                bodyData = await getRequestBody(req);
+            } catch (err) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+                return;
+            }
+
+            const { username, password } = bodyData;
+            if (!username || !password) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: "Username and password are required" }));
+                return;
+            }
+
+            res.writeHead(201);
+            res.end(JSON.stringify({ success: true, message: "User registered successfully!" }));
+            return;
+        }
+
+        // ROUTE: POST /api/auth/login
+        if (req.url === '/api/auth/login' && req.method === 'POST') {
+            let bodyData;
+            try {
+                bodyData = await getRequestBody(req);
+            } catch (err) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+                return;
+            }
+
+            const { username, password } = bodyData;
+            if (!username || !password) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: "Username and password are required" }));
+                return;
+            }
+
+            res.writeHead(200);
+            res.end(JSON.stringify({
+                success: true,
+                token: `ey-mock-session-token-for-${username}`
+            }));
+            return;
+        }
+
+        // ==========================================
+        // PROTECTED CRUD RESOURCE ENDPOINTS
+        // ==========================================
+
+        // ROUTE: GET /api/items (Read entries)
+        if (req.url === '/api/items' && req.method === 'GET') {
+            res.writeHead(200);
+            res.end(JSON.stringify(dbItemsCollection));
+            return;
+        }
+
+        // ROUTE: POST /api/items (Create entry)
+        if (req.url === '/api/items' && req.method === 'POST') {
+            let bodyData;
+            try {
+                bodyData = await getRequestBody(req);
+            } catch (err) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+                return;
+            }
+
+            const { name } = bodyData;
+            if (!name) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: "Item name is required" }));
+                return;
+            }
+
+            const newItem = { id: Date.now(), name };
+            dbItemsCollection.push(newItem); // Persist to local runtime array
+
+            res.writeHead(201);
+            res.end(JSON.stringify(newItem));
+            return;
+        }
+
+        // ADDED ROUTE: DELETE /api/items/:id (Remove entry)
+        if (req.url.startsWith('/api/items/') && req.method === 'DELETE') {
+            // Extract trailing segment and parse numerical representation
+            const targetIdStr = req.url.split('/').pop();
+            const targetId = parseInt(targetIdStr, 10);
+
+            // Filter collection to drop target item matching ID context
+            dbItemsCollection = dbItemsCollection.filter(item => item.id !== targetId);
+
+            res.writeHead(200);
+            res.end(JSON.stringify({ success: true, message: `Record ${targetId} successfully cleared from core storage.` }));
+            return;
+        }
+
+        // Catch-all Fallback for Unmatched Routes inside the try block
+        res.writeHead(404);
+        res.end(JSON.stringify({ error: "Route not found" }));
+        return;
+
+    } catch (error) {
+        console.error("Runtime handler crash:", error);
+        if (!res.headersSent) {
+            res.writeHead(500);
+            res.end(JSON.stringify({ error: "Internal Server Error" }));
+        }
     }
-
-    // Fallback 404
-    res.writeHead(404);
-    res.end(JSON.stringify({ error: "Route not found" }));
-
-  } catch (error) {
-    console.error(`Error handling request: ${error.message}`);
-    res.writeHead(500);
-    res.end(JSON.stringify({ error: "Internal Server Error", details: error.message }));
-  }
 });
 
-process.on('SIGTERM', () => {
-  server.close(() => {
-    pool.end(() => {
-      console.log('Database pool and server closed gracefully.');
-      process.exit(0);
-    });
-  });
-});
-
+// ==========================================
+// PORT BINDING (OUTSIDE CORE WRAPPER)
+// ==========================================
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`Backend server actively listening on port ${PORT}`);
+    console.log(`Backend server actively listening on port ${PORT}`);
 });

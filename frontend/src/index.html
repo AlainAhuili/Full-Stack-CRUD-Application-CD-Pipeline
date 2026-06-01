@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Full-Stack CRUD Application</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-fcolor: #f4f4f9; }
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
@@ -17,10 +17,16 @@
         .auth-toggle span { color: #007BFF; cursor: pointer; text-decoration: underline; }
         ul { list-style-type: none; padding: 0; }
         li { padding: 10px; background: #eee; margin-top: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Styling layer for system feedback messages */
+        .error-banner { padding: 10px; background: #F8D7DA; color: #721C24; border: 1px solid #F5C6CB; border-radius: 4px; margin-bottom: 15px; font-size: 0.9em; }
     </style>
 </head>
 <body>
     <div class="container">
+        
+        <div id="error-box" class="error-banner hidden"></div>
+
         <div id="auth-section">
             <h2 id="auth-title">Login</h2>
             <form id="auth-form">
@@ -41,15 +47,15 @@
 
         <div id="crud-section" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>Your Secured Items</h2>
+                <h2>CRUD User Control Panel</h2>
                 <button id="logout-btn" style="background: #DC3545;">Logout</button>
             </div>
             
             <form id="item-form" class="form-group">
-                <label for="item-name">Add New Item</label>
+                <label for="item-name">Create New DB Entry</label>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="item-name" placeholder="Item descriptive name..." required>
-                    <button type="submit">Add</button>
+                    <input type="text" id="item-name" placeholder="Enter record properties..." required>
+                    <button type="submit">Execute</button>
                 </div>
             </form>
 

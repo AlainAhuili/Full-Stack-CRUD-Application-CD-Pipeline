@@ -1,35 +1,27 @@
-async function registerUser(db, crypto, { username, password }) {
-  if (!username || !password) {
-    throw new Error('Username and password are required');
-  }
+const express = require('express');
+const router = express.Router();
+const { registerUser, loginUser } = require('../services/authService'); // adjust path if needed
 
-  const existingUser = await db.findUserByUsername(username);
-  if (existingUser) {
-    throw new Error('Username already exists');
-  }
+// FIX: Change from '/api/auth/register' to just '/register'
+router.post('/register', async (req, res) => {
+    try {
+        // req.body should contain { username, password }
+        const result = await registerUser(db, crypto, req.body); 
+        res.status(201).json(result);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
 
-  const hashedPassword = await crypto.hash(password);
-  await db.saveUser({ username, password: hashedPassword });
+// FIX: Change from '/api/auth/login' to just '/login'
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const result = await loginUser(db, crypto, username, password);
+        res.status(200).json(result);
+    } catch (err) {
+        res.status(401).json({ error: err.message });
+    }
+});
 
-  return { success: true };
-}
-
-async function loginUser(db, crypto, username, password) {
-  const user = await db.findUserByUsername(username);
-  if (!user) {
-    throw new Error('Invalid credentials');
-  }
-
-  const isMatch = await crypto.compare(password, user.password);
-  if (!isMatch) {
-    throw new Error('Invalid credentials');
-  }
-
-  // Generate stateless session payload identifier (JWT mockup)
-  return {
-    success: true,
-    token: `ey-mock-session-token-for-${username}`
-  };
-}
-
-module.exports = { registerUser, loginUser };
+module.exports = router;
